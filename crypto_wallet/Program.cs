@@ -1,10 +1,16 @@
 ﻿using System;
 
+using Crypto;
+
 class App {
+    private static void Start() {
 
-    static int Main(string[] args) {
-        Console.WriteLine("Hello, W0rld!");
+    }
 
+    public static int Main(string[] args) {
+
+        App.Start();
+        
         return 0;
     }
 }
