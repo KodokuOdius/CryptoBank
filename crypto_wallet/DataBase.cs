@@ -1,0 +1,6 @@
+
+namespace DataBaseSpace {
+    class DataBase {
+
+    }
+}
