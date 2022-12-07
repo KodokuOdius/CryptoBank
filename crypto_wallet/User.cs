@@ -10,6 +10,8 @@ namespace UserSpace {
             this.password = _sha256.hash(password);
         }
 
+        public string Email { get { return this.email; } }
+
         public Boolean CheckPassword(string password) {
             return _sha256.hash(password) == this.password;
         }
