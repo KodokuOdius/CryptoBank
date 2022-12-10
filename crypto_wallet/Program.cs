@@ -6,99 +6,180 @@ using UserSpace;
 
 class App {
 
-    struct StateExit {
-        public static int stateNumber = -1;
-    }
-
-    struct StateHello {
-        public static int stateNumber = 0;
-        public static string stateText() {
-            return "Приветствие";
-        }
-        public static int State1 = StateEnter.stateNumber;
-        public static int exit = StateExit.stateNumber;
-    }
-
-    struct StateEnter {
-        public static int stateNumber = 1;
-        public static string stateText() {
-            return "Вход";
-        }
-        public static void stateAction() {
-            for (int i = 0; i < 3; i++) {
-                Console.WriteLine("Введите логин и пороль");
-                string email = Console.ReadLine();
-                string password = Console.ReadLine();
-
-                User? user = UsersDB.DB.GetUser(email);
-                if (user == null) {
-                    Console.WriteLine();
-                    continue;
-                }
-
-                if(user.CheckPassword(password) == false) {
-                    Console.WriteLine();
-                    continue;
-                };
-                
-                currentUser = user;
-                break;
-            }
-        }
-
-        public static int State1 = StateHello.stateNumber;
-        public static int State2 = StateProfile.stateNumber;
-    }
-
-    struct StateProfile {
-        public static int stateNumber = 3;
-    }
-
-
     private static Boolean isAppOpen = false;
-    private static int userState = 0;
+    private static int currentState = 0;
     private static User? currentUser = null;
-    private static void Menu() {
-
-    }
 
     private static void Start() {
+        Console.Clear();
         isAppOpen = true;
     }
 
     private static void Exit() {
         isAppOpen = false;
+        Console.Clear();
     }
 
-    private static void Update() {
-        if (userState == 0) {
-            Console.WriteLine(
-                "Приветствую тебя в системе \n" +
-                "1 - Вход \n" +
-                "2 - Регестрация \n" +
-                "0 - Закрыть \n"
-            );
+
+    private static void Hello() {
+        string? choise;
+        Console.WriteLine(
+            "Приветствию! \n" +
+            "1 - Вход \n" +
+            "2 - Зарегестрироваться \n" +
+            "0 - Выйти \n"
+        );
+        choise = Console.ReadLine();
+        if (choise == "1") {
+            currentState = 1;
+        } else if (choise == "2") {
+            currentState = 2;
+        } else if (choise == "0") {
+            Exit();
+        } else {
+            Console.WriteLine("Нет такого вариата");
         }
     }
 
-    private static void UserProcess(int choise) {
 
+    private static void Enter() {
+        for (int i = 0; i < 3; i++) {    
+            Console.WriteLine(
+                $"Выполните вход в систему ({3 - i} попытки)"
+            );
+            Console.Write("Email: ");
+            string? email = Console.ReadLine();
+
+            Console.Write("Password: ");
+            string? password = Console.ReadLine();
+
+            User? user = UsersDB.DB.GetUser(email);
+
+            if (user == null) {
+                continue;
+            };
+
+            if (password == null || !user.CheckPassword(password)) {
+                continue;
+            }
+
+            currentUser = user;
+            currentState = 3;
+            return;
+        }
+        currentState = 0;
+    }
+
+    public static void Regestration() {
+        Console.WriteLine("Зарегестрируйте пользователя");   
+        Console.Write("Email: ");
+        string? email = Console.ReadLine();
+
+        if (UsersDB.DB.GetUser(email) != null) {
+            Console.WriteLine("Эта почта уже используется");
+            return;
+        }
+
+        Console.Write("Password: ");
+        string? password = Console.ReadLine();
+
+        if (email != null && password != null) {
+            User new_user = UsersDB.DB.CreateUser(email, password);
+            currentUser = new_user;
+            currentState = 3;
+        } else {
+            Console.WriteLine("Вы пропустили какое-то поле");
+        }
+    }
+
+    public static void Profile() {
+        if (currentUser != null) {
+            Console.WriteLine(
+                "Ваш профиль: \n" +
+                $"Email: {currentUser.Email} \n\n" +
+                "Ваш кошелёк: \n"
+            );
+            currentUser.UserWallet.ShowData();
+
+            Console.WriteLine(
+                "\n1 - Сделать перевод \n" +
+                "0 - Выйти из системы"
+            );
+
+            string? choise = Console.ReadLine();
+
+            if (choise == "1") {
+                currentState = 4;
+            } else if (choise == "0") {
+                currentState = 0;
+            } else {
+                Console.WriteLine("Нет такого варианта");
+            }
+
+        } else {
+            currentState = 0;
+        }
+    }
+
+    public static void CreateTransaction() {
+        if (currentUser == null) {
+            currentState = 3;
+            return;
+        }
+
+        Console.WriteLine("Введите почту пользователя которому хотите совершить перевод: \nEmail:");
+        string? email = Console.ReadLine();
+
+        User? search_user = UsersDB.DB.GetUser(email);
+
+        if (search_user == null) {
+            Console.WriteLine("Пользователь не найден");
+            return;
+        } else {
+            Console.WriteLine("Ваш кошелёк:");
+            currentUser.UserWallet.ShowData();
+
+            Console.Write("\nВведите сумму: ");
+            string? amountS = Console.ReadLine();
+
+            Console.Write("Введите валюту (как в кошельке): ");
+            string? currency = Console.ReadLine();
+
+            if (amountS != null && currency != null && int.TryParse(amountS, out int amount)) {
+                bool result = currentUser.UserWallet.CheckAmount(currency, amount);
+                if (result == false) {
+                    Console.WriteLine("Не хватает средств");
+                }
+                Blockchain.blockchain.AddBlock(currentUser.Email, search_user.Email, amount, currency);
+            }
+        }
+        currentState = 3;
+    }
+
+    private static void Update() {
+        Console.Clear();
+
+        if (currentState == 0) {
+            Hello();
+        } else if (currentState == 1) {
+            Enter();   
+        } else if (currentState == 2) {
+            Regestration();
+        } else if (currentState == 3) {
+            Profile();
+        } else if (currentState == 4) {
+            CreateTransaction();
+        }
     }
 
     public static int Main(string[] args) {
-        int userChoice = 0;
-        string? line;
         App.Start();
 
         while (isAppOpen) {
             Update();
-
-            line = Console.ReadLine();
-            if (line != null) {
-                userChoice = int.Parse(line);
-                UserProcess(userChoice); 
-            }
         }
+
+        Console.WriteLine("Прощайте!");
         
         return 0;
     }

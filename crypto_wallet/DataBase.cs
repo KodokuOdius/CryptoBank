@@ -5,19 +5,29 @@ using UserSpace;
 
 
 namespace DataBaseSpace {
-    enum Currency { RUB, USD };
+    // enum Currency { RUB, USD };
 
     class Transaction {
         private string from;
         private string to;
         private int amount;
-        private Currency currency;
+        private string currency;
 
-        public Transaction(string from, string to, int amount, Currency currency) {
+        public Transaction(string from, string to, int amount, string currency) {
             this.from = from;
             this.to = to;
             this.amount = amount;
             this.currency = currency;
+        }
+
+        public void DoTransaction() {
+            User? user_from = UsersDB.DB.GetUser(this.from);
+            User? user_to = UsersDB.DB.GetUser(this.to);
+
+            if (user_from != null && user_to != null) {
+                user_from.UserWallet.TakeMoney(this.currency, this.amount);
+                user_to.UserWallet.AddMoney(this.currency, this.amount);
+            }
         }
 
         public override string ToString() {
@@ -36,6 +46,8 @@ namespace DataBaseSpace {
             this.data = data;
             this.prevHash = prevHash;
             this.currentHash = _sha256.hash(timestamp + this.prevHash + data.ToString());
+
+            this.data.DoTransaction();
         }
 
         public override string ToString() {
@@ -49,7 +61,7 @@ namespace DataBaseSpace {
     class Blockchain {
         static Blockchain() {}
         private Blockchain() {
-            this.data = new List<Block> {new Block(DateTimeOffset.Now.ToUnixTimeSeconds(), new Transaction("", "", 0, 0))};
+            this.data = new List<Block> {new Block(DateTimeOffset.Now.ToUnixTimeSeconds(), new Transaction("", "", 0, ""))};
         }
 
         private static readonly Blockchain chain = new Blockchain();
@@ -63,6 +75,10 @@ namespace DataBaseSpace {
 
         public Block LastBlock() {
             return this.data.Last<Block>();
+        }
+
+        public void AddBlock(string from, string to, int amount, string currency) {
+            this.AddBlock(new Transaction(from, to, amount, currency));
         }
 
         public void AddBlock(Transaction data) {
@@ -95,7 +111,7 @@ namespace DataBaseSpace {
             get { return db; }
         }
 
-        public User? GetUser(string email) {
+        public User? GetUser(string? email) {
             for (int i = 0; i < this.users.Count; i++) {
                 if (this.users[i].Email == email) {
                     return this.users[i];
@@ -104,13 +120,10 @@ namespace DataBaseSpace {
             return null;
         }
 
-        public User? CreateUser(string email, string password) { 
-            if (this.GetUser(email) == null) {
-                User new_user = new User(email, password);
-                this.users.Add(new_user);
-                return new_user;
-            }
-            return null;
+        public User CreateUser(string email, string password) { 
+            User new_user = new User(email, password);
+            this.users.Add(new_user);
+            return new_user;
         }
 
         public Boolean DeleteUser(string email) {

@@ -1,7 +1,0 @@
-
-
-namespace BankSpace {
-    class Bank {
-
-    }
-}
