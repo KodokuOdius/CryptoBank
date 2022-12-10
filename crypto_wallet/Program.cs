@@ -151,6 +151,8 @@ class App {
                     Console.WriteLine("Не хватает средств");
                 }
                 Blockchain.blockchain.AddBlock(currentUser.Email, search_user.Email, amount, currency);
+            } else {
+                Console.WriteLine("Ошибка ввода");
             }
         }
         currentState = 3;
