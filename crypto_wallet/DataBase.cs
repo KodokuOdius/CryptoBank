@@ -5,8 +5,6 @@ using UserSpace;
 
 
 namespace DataBaseSpace {
-    // enum Currency { RUB, USD };
-
     class Transaction {
         private string from;
         private string to;

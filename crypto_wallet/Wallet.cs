@@ -6,7 +6,10 @@ namespace WalletSpace {
         private Dictionary<string, int> data;
         public Wallet() {
             this.data = new Dictionary<string, int>{
-                {"RUB", 1000}
+                {"RUB", 1000},
+                {"USD", 1000},
+                {"BTC", 1000},
+                {"SHS", 1000},
             };
         }
 

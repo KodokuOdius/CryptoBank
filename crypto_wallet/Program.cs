@@ -23,7 +23,8 @@ class App {
     private static void Hello() {
         string? choise;
         Console.WriteLine(
-            "Приветствию! \n" +
+            "Приветствию тебя в криптокошельке! \n" +
+            "Выбери что будешь делать: \n" +
             "1 - Вход \n" +
             "2 - Зарегестрироваться \n" +
             "0 - Выйти \n"
