@@ -1,6 +1,5 @@
 ﻿using System;
 
-using Crypto;
 using DataBaseSpace;
 using UserSpace;
 
@@ -149,6 +148,7 @@ class App {
                 bool result = currentUser.UserWallet.CheckAmount(currency, amount);
                 if (result == false) {
                     Console.WriteLine("Не хватает средств");
+                    return;
                 }
                 Blockchain.blockchain.AddBlock(currentUser.Email, search_user.Email, amount, currency);
             } else {
