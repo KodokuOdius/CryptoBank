@@ -3,7 +3,7 @@ using DataBaseSpace;
 
 
 namespace States {
-    abstract class State {
+    interface State {
         static public int Number;
         static public int Action(Delegate? method = null) {
             return Number;
@@ -11,15 +11,22 @@ namespace States {
     }
 
     class HelloState : State {
-        static public new int Number = 0;
-        static public new int Action(Delegate? method = null) {
+        static public int Number = 0;
+        static public int Action(Delegate? method = null) {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(
-                "Приветствию тебя в криптокошельке! \n" +
-                "Выбери что будешь делать: \n" +
+                "Приветствую тебя в криптокошельке! \n" +
+                "Этот кошелёк защитит твои данные лучшим шифрованием \n" +
+                "Выбери, что будешь делать: \n"
+            );
+
+            Console.ResetColor();
+            Console.WriteLine(
                 "1 - Вход \n" +
                 "2 - Зарегестрироваться \n" +
                 "0 - Выйти \n"
             );
+
             string? choise = Console.ReadLine();
             if (choise == "1") {
                 return EnterState.Number;
@@ -28,32 +35,32 @@ namespace States {
             } else if (choise == "0") {
                 return -1;
             } else {
-                Console.WriteLine("Нет такого вариата");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("ОШИБКА: Нет такого вариата");
             }
             return Number;
         }
     }
 
     class EnterState : State {
-        static public new int Number = 1;
-        static public new int Action(Delegate? setUser = null) {
-            for (int i = 0; i < 3; i++) {    
+        static public int Number = 1;
+        static public int Action(Delegate? setUser = null) {
+            for (int i = 0; i < 3; i++) {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(
-                    $"Выполните вход в систему ({3 - i} попытки)"
+                    $"\nВыполните вход в систему ({3 - i} попытки)"
                 );
-                Console.Write("Email: ");
+                Console.ResetColor();
+
+                Console.Write("Введите Логин: ");
                 string? email = Console.ReadLine();
 
-                Console.Write("Password: ");
+                Console.Write("Введите пароль: ");
                 string? password = User.ReadPassword();
 
                 User? user = UsersDB.DB.GetUser(email);
 
-                if (user == null) {
-                    continue;
-                };
-
-                if (password == null || !user.CheckPassword(password)) {
+                if (user == null || password == null || !user.CheckPassword(password)) {
                     continue;
                 }
                 if (setUser != null) {
@@ -66,20 +73,22 @@ namespace States {
     }
 
     class RegistrationState : State {
-        static public new int Number = 2;
-        static public new int Action(Delegate? setUser = null) {
-            // TODO: покрасить тект
-            Console.WriteLine("Зарегестрируйте пользователя");   
-            Console.Write("Email: ");
+        static public int Number = 2;
+        static public int Action(Delegate? setUser = null) {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Регистрация нового пользователя");   
+            Console.ResetColor();
+
+            Console.Write("Введите Логин: ");
             string? email = Console.ReadLine();
 
             if (UsersDB.DB.GetUser(email) != null) {
-                Console.WriteLine("Эта почта уже используется");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Предупреждение: Этот логин уже используется");
                 return Number;
             }
 
-            // TODO: Скрыть пароль
-            Console.Write("Password: ");
+            Console.Write("Введите пароль: ");
             string? password = User.ReadPassword();
 
             if (email != null && password != null && setUser != null) {
@@ -88,7 +97,8 @@ namespace States {
 
                 return ProfileState.Number;
             } else {
-                Console.WriteLine("Вы пропустили какое-то поле");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ОШИБКА: Вы пропустили какое-то поле");
             }
             return Number;
         }
@@ -96,19 +106,24 @@ namespace States {
 
 
     class ProfileState : State {
-        static public new int Number = 3;
-        static public new int Action(Delegate? getUser = null) {
+        static public int Number = 3;
+        static public int Action(Delegate? getUser = null) {
             if (getUser == null) {
                 return Number;
             }
 
             User? currentUser = (User?)getUser.DynamicInvoke();
             if (currentUser != null) {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(
                     "Ваш профиль: \n" +
-                    $"Email: {currentUser.Email} \n\n" +
-                    "Ваш кошелёк: \n"
+                    $"Логин: {currentUser.Email} \n\n"
                 );
+                Console.ResetColor();
+
+                Console.WriteLine("Ваш кошелёк: \n");
+                Console.ResetColor();
+
                 currentUser.UserWallet.ShowData();
 
                 Console.WriteLine(
@@ -123,7 +138,8 @@ namespace States {
                 } else if (choise == "0") {
                     return HelloState.Number;
                 } else {
-                    Console.WriteLine("Нет такого варианта");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ОШИБКА: Нет такого варианта");
                 }
             }
             return Number;
@@ -131,8 +147,8 @@ namespace States {
     }
 
     class CreateTransactionState : State {
-        static public new int Number = 4;
-        static public new int Action(Delegate? getUser = null) {
+        static public int Number = 4;
+        static public int Action(Delegate? getUser = null) {
             if (getUser == null) {
                 return ProfileState.Number;
             }
@@ -142,13 +158,17 @@ namespace States {
                 return ProfileState.Number;
             }
 
-            Console.WriteLine("Введите почту пользователя которому хотите совершить перевод: \nEmail:");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Введите логин пользователя, которому хотите совершить перевод: \nЛогин:");
+            Console.ResetColor();
+
             string? email = Console.ReadLine();
 
             User? search_user = UsersDB.DB.GetUser(email);
 
             if (search_user == null) {
-                Console.WriteLine("Пользователь не найден");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("ОШИБКА: Пользователь не найден");
                 return Number;
             } else {
                 Console.WriteLine("Ваш кошелёк:");
@@ -163,12 +183,14 @@ namespace States {
                 if (amountS != null && currency != null && int.TryParse(amountS, out int amount)) {
                     bool result = currentUser.UserWallet.CheckAmount(currency, amount);
                     if (result == false) {
-                        Console.WriteLine("Не хватает средств");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("ОШИБКА: Не хватает средств");
                         return Number;
                     }
                     Blockchain.blockchain.AddBlock(currentUser.Email, search_user.Email, amount, currency);
                 } else {
-                    Console.WriteLine("Ошибка ввода");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ОШИБКА: Ошибка ввода");
                     return Number;
                 }
             }

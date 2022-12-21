@@ -1,7 +1,4 @@
-﻿using System;
-
-using DataBaseSpace;
-using UserSpace;
+﻿using UserSpace;
 using States;
 
 class App {
@@ -29,8 +26,11 @@ class App {
         Console.Clear();
     }
 
+
     private static void Update() {
+        System.Threading.Thread.Sleep(200);
         Console.Clear();
+        Console.ResetColor();
 
         if (currentState == 0) {
             currentState = HelloState.Action();
@@ -53,7 +53,6 @@ class App {
         while (isAppOpen) {
             Update();
         }
-
         Console.WriteLine("Прощайте!");
         
         return 0;
