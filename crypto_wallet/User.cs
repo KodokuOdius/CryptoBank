@@ -24,5 +24,19 @@ namespace UserSpace {
             return $"email:{this.email}";
         }
 
+        static public String? ReadPassword() {
+            ConsoleColor origBG = Console.BackgroundColor;
+            ConsoleColor origFG = Console.ForegroundColor;
+
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            string? Password = Console.ReadLine();
+
+            Console.BackgroundColor = origBG;
+            Console.ForegroundColor = origFG;
+            return Password;
+        }
+
     }
 }
